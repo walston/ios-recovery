@@ -10,6 +10,6 @@
   "author": "https://github.com/walston",
   "license": "ISC",
   "dependencies": {
-    "dot-env": "^0.0.1"
+    "dotenv": "^2.0.0"
   }
 }
