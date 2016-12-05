@@ -1,0 +1,15 @@
+{
+  "name": "ios-recovery",
+  "version": "1.0.0",
+  "description": "Get all my Photos out an encrypted backup",
+  "main": "main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node main.js"
+  },
+  "author": "https://github.com/walston",
+  "license": "ISC",
+  "dependencies": {
+    "dot-env": "^0.0.1"
+  }
+}
