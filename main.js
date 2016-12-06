@@ -3,6 +3,7 @@ if (!process.env.RECOVERY_PATH) {
   process.exit(1);
 }
 const path = require('path');
+const fs = require('fs');
 const sql = require('sqlite3');
 
 const dbFile = path.join(process.env.RECOVERY_PATH, 'Manifest.db');
@@ -17,9 +18,9 @@ var query = [
   'AND relativePath like "Media/DCIM%"',
   ';'
 ].join(' ');
-db.each(query, [], function(err, results) {
+db.each(query, [], function(err, result) {
   errHandler(err);
-  console.log(results);
+  writeFile(result);
 })
 
 function errHandler (error) {
@@ -27,4 +28,10 @@ function errHandler (error) {
     console.warn(err);
     process.exit(2);
   }
+}
+
+function writeFile(fileInfo) {
+  var pwd = process.env.WRITE_PATH || process.env.PWD;
+  var writePath = path.join(pwd, fileInfo.relativePath);
+  console.log(writePath);
 }
