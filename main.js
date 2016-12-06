@@ -13,21 +13,26 @@ const db = new sql.Database(dbFile, (err, res) => {
   if (err) {console.warn('Failed to connect to DB'); console.warn(err); }
 });
 
-var query = [
-  'SELECT *',
-  'FROM Files',
-  'WHERE domain="CameraRollDomain"',
-  'AND relativePath like "Media/DCIM%"',
-  ';'
-].join(' ');
+function queryBuilder(relativePath){
+  relativePath =
+  'relativePath="' + relativePath + '"'||
+  'relativePath like "Media/DCIM%"'
+  return [
+    'SELECT *',
+    'FROM Files',
+    'WHERE domain="CameraRollDomain"',
+    'AND', 'relativePath like "Media/DCIM%"',
+    ';'
+  ].join(' ');
+}
 
 
 app.engine('pug', require('pug').__express);
 
-app.all('/', (req, res) => {
+app.get('/', (req, res) => {
   var q = new Promise(function(resolve, reject) {
     var rows = [];
-    db.each(query, [],
+    db.each(queryBuilder(), [],
       function queryEach(err, result) {
         if (err) {console.warn('Failed to Query'); console.warn(err); }
         else rows.push(result);
@@ -54,6 +59,30 @@ app.all('/', (req, res) => {
     console.log(err)
     res.status(500).send(err)
   });
+});
+
+app.get('/:relativePath', (req, res) => {
+  console.log(req.params.relativePath);
+  var q = new Promise(function(resolve, reject) {
+    db.get(queryBuilder(req.params.relativePath), [],
+      function(err, row) {
+        if (err) reject({code: 500, err: err});
+        else if (!row) {
+          reject({code: 404});
+        }
+        else {
+          resolve(row);
+        }
+      }
+    )
+  });
+
+  q.then( row => {
+    res.send(row.file);
+  }).catch(errObj => {
+    res.status(errObj.code).send(errObj.err);
+  })
+
 });
 
 app.listen('8080', () => {
