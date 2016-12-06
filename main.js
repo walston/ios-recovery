@@ -17,6 +17,7 @@ function queryBuilder(relativePath){
   relativePath =
   'relativePath="' + relativePath + '"'||
   'relativePath like "Media/DCIM%"'
+
   return [
     'SELECT *',
     'FROM Files',
@@ -38,7 +39,6 @@ app.get('/', (req, res) => {
         else rows.push(result);
       },
       function queryComplete(err, affectedRows) {
-        console.log('rows.length: ' + rows.length)
         if (err) reject('Error on completion');
         else resolve(rows);
       }
@@ -46,7 +46,6 @@ app.get('/', (req, res) => {
 
   });
   q.then(function queryCompleted(rows) {
-    console.log(rows)
     res.render('index.pug', {images: rows}, (err, html) => {
       if (err) {
         console.warn(err);
@@ -56,15 +55,14 @@ app.get('/', (req, res) => {
       }
     });
   }).catch( function queryFailed(err) {
-    console.log(err)
     res.status(500).send(err)
   });
 });
 
-app.get('/:relativePath', (req, res) => {
-  console.log(req.params.relativePath);
+app.all('*', (req, res) => {
+  var requestPath = req.originalUrl.substring(1);
   var q = new Promise(function(resolve, reject) {
-    db.get(queryBuilder(req.params.relativePath), [],
+    db.get(queryBuilder(requestPath), [],
       function(err, row) {
         if (err) reject({code: 500, err: err});
         else if (!row) {
@@ -81,8 +79,11 @@ app.get('/:relativePath', (req, res) => {
     res.send(row.file);
   }).catch(errObj => {
     res.status(errObj.code).send(errObj.err);
-  })
+  });
+});
 
+app.all('', (req, res) => {
+  res.status(404).send(req.url);
 });
 
 app.listen('8080', () => {
